@@ -124,14 +124,53 @@
         jmp display_result
 
     multiplication:
-        mov ah, '0'
-        mul bl
-        
-        mov ch, ah
-        mov cl, al
-        
-        mov operator, 'x'
-        jmp display_result
+        ; Convert ASCII to numeric value
+        sub bh, '0'         ; Convert first ASCII digit to numeric value (0-9)
+        sub bl, '0'         ; Convert second ASCII digit to numeric value (0-9)
+
+        ; Multiply digits
+        mov al, bh          ; Move first numeric digit to AL
+        mul bl              ; Multiply AL by BL (result in AX)
+
+        ; Check if the result is a two-digit number
+        cmp ax, 10
+        jb single_digit_result_multiplication
+
+        ; If two-digit result, split into tens and units digits
+        ; Get the tens digit
+        mov cx, 10          ; Set divisor to 10
+        xor dx, dx          ; Clear DX for division
+        div cx              ; Divide AX by 10 (quotient in AL, remainder in AH)
+
+        ; Convert and display tens digit
+        mov dl, al          ; Move the quotient (tens digit) to DL
+        add dl, '0'         ; Convert to ASCII
+        mov ah, 02h
+        int 21h             ; Display the tens digit
+
+        ; Convert and display units digit
+        mov dl, ah          ; Move the remainder (units digit) to DL
+        add dl, '0'         ; Convert to ASCII
+        mov ah, 02h
+        int 21h             ; Display the units digit
+
+        jmp output_result
+
+    single_digit_result_multiplication:
+
+        ; Single-digit result
+        add al, '0'         ; Convert result to ASCII
+        mov dl, al
+        mov ah, 02h
+        int 21h             ; Display the single-digit result
+
+    output_result:
+        ; Output newline after result
+        mov dx, offset new_line
+        mov ah, 09h
+        int 21h
+
+        jmp main_menu
 
     subtraction:
         sub al, bl
@@ -195,7 +234,7 @@
         mov ah, 09h
         int 21h
         
-        jmp to_main
+        jmp main_menu
 
     display_result:
         ; Convert result to ASCII
@@ -221,7 +260,6 @@
         mov dl, bl
         mov ah, 02h
         int 21h
-
    
         ; Output equal sign and result
         mov dx, offset equal
@@ -241,7 +279,6 @@
         mov ah, 09h
         int 21h
 
-    to_main:
         ; Go back to main menu
         jmp main_menu
 
