@@ -157,12 +157,16 @@
         jmp output_result
 
     single_digit_result_multiplication:
-
         ; Single-digit result
         add al, '0'         ; Convert result to ASCII
         mov dl, al
         mov ah, 02h
         int 21h             ; Display the single-digit result
+
+        ; Output newline after single-digit result
+        mov dx, offset new_line
+        mov ah, 09h
+        int 21h             ; Display newline
 
     output_result:
         ; Output newline after result
@@ -260,17 +264,18 @@
         mov dl, bl
         mov ah, 02h
         int 21h
-   
+
         ; Output equal sign and result
         mov dx, offset equal
         mov ah, 09h
         int 21h
         
-        mov dl, ch
+        ; Correctly output the result
+        mov dl, ch         ; Output tens digit
         mov ah, 02h
         int 21h
 
-        mov dl, cl        ; Output result
+        mov dl, cl         ; Output units digit
         mov ah, 02h
         int 21h
 
